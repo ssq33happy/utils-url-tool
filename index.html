@@ -121,11 +121,11 @@
     <h1>TDUrl API</h1>
     <div>
       <laber for="iptUrl">url：</laber>
-      <input id="iptUrl" autofocus name="url" type="text" value="http://localhost:8080/a/b/c?a=1&b=2#abc">
+      <input id="iptUrl" autofocus name="url" type="text" value="'http://localhost:8080/a/b/c?a=1&b=2#abc'">
       <laber for="iptKey">key：</laber>
-      <input id="iptName" name="key" type="text" value="a">
+      <input id="iptName" name="key" type="text" value="'a'">
       <laber for="iptKey">value：</laber>
-      <input id="iptValue" name="value" type="text" value="b">
+      <input id="iptValue" name="value" type="text" value="'b'">
       <laber for="iptParams">params：</laber>
       <textarea id="iptParams" name="params" rows="10" cols="20">{"ssq":1111}</textarea>
       <laber for="iptArr">arr：</laber>
@@ -197,17 +197,17 @@
     console.log(params)
     let Pres = document.getElementsByTagName('pre')
 
-    Pres[0].innerHTML = syntaxHighlight(TDUrl.parseURL(params.url))
+    Pres[0].innerHTML = syntaxHighlight(TDUrl.parseURL(eval(params.url)))
 
-    Pres[1].innerHTML = syntaxHighlight(TDUrl.parseURLParams(params.url))
+    Pres[1].innerHTML = syntaxHighlight(TDUrl.parseURLParams(eval(params.url)))
 
-    Pres[2].innerHTML = syntaxHighlight(TDUrl.getURLParam(params.key, params.url))
+    Pres[2].innerHTML = syntaxHighlight(TDUrl.getURLParam(eval(params.key), eval(params.url)))
 
-    Pres[3].innerHTML = renderString(TDUrl.appendParam(params.key, params.value, params.url))
+    Pres[3].innerHTML = renderString(TDUrl.appendParam(eval(params.key), eval(params.value), eval(params.url)))
 
-    Pres[4].innerHTML = renderString(TDUrl.appendParams(JSON.parse(params.params), params.url))
+    Pres[4].innerHTML = renderString(TDUrl.appendParams(JSON.parse(params.params), eval(params.url)))
 
-    Pres[5].innerHTML = renderString(TDUrl.removeParams(JSON.parse(params.arr), params.url))
+    Pres[5].innerHTML = renderString(TDUrl.removeParams(JSON.parse(params.arr), eval(params.url)))
 
   }
 

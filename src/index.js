@@ -16,10 +16,14 @@ class TDUrl {
     this.printErrorLog = this.printErrorLog.bind(this)
   }
 
-  parseURL(url) { // 把url的所有信息转化成json对象
+  parseURL(url = window.location.href) { // 把url的所有信息转化成json对象
     try {
+      if (!this.typeCheck.isString(url)) {
+        this.printErrorLog({ name: 'parseURL', message: '参数url非字符类型' })
+        return {}
+      }
       let a = document.createElement('a')
-      a.href = url || window.location.href
+      a.href = url
       return {
         source: url,
         protocol: a.protocol.replace(':', ''),
@@ -56,10 +60,14 @@ class TDUrl {
     }
   }
 
-  parseURLParams(url) { // 把url的参数部分转化成json对象
+  parseURLParams(url = window.location.href) { // 把url的参数部分转化成json对象
     try {
+      if (!this.typeCheck.isString(url)) {
+        this.printErrorLog({ name: 'parseURLParams', message: '参数url非字符类型' })
+        return {}
+      }
       let a = document.createElement('a')
-      a.href = url || window.location.href
+      a.href = url
       let ret = {}
       let seg = a.search.replace(/^\?/, '').split('&')
       let len = seg.length
@@ -79,10 +87,25 @@ class TDUrl {
     }
   }
 
-  getURLParam(key, url) { // 通过key获取url中的参数值
+  getURLParam(key, url = window.location.href) { // 通过key获取url中的参数值
     try {
+      let e = {}
+      if (!this.typeCheck.isString(key)) {
+        e = { name: 'getURLParam', message: '参数key非字符类型' }
+      }
+      if (!this.typeCheck.isString(url)) {
+        if (e.message) {
+          e.message = '参数key和url非字符类型'
+        } else {
+          e = { name: 'getURLParam', message: '参数url非字符类型' }
+        }
+      }
+      if (Object.keys(e).length) {
+        this.printErrorLog(e)
+        return url
+      }
       let a = document.createElement('a')
-      a.href = url || window.location.href
+      a.href = url
       let reg = new RegExp('[?&]' + key + '=([^&]+)')
       return a.search.match(reg) ? RegExp.$1 : ''
     } catch (e) {
@@ -91,18 +114,51 @@ class TDUrl {
     }
   }
 
-  appendParam(key, value, url) { // 向url中添加字段
-    !this.typeCheck.isString(key) && this.printErrorLog({ name: 'appendParam', message: '参数key非字符类型' })
-    this.typeCheck.isObject(value) && this.printErrorLog({ name: 'appendParam', message: '参数value不能是对象类型' })
-    if (!this.typeCheck.isString(key) || this.typeCheck.isObject(value)) return ''
+  appendParam(key, value, url = window.location.href) { // 向url中添加字段
+    let e = {}
+    if (!this.typeCheck.isString(key)) {
+      e = { name: 'appendParam', message: '参数key非字符类型' }
+    }
+    if (this.typeCheck.isObject(value)) {
+      if (e.message) {
+        e.message = e.message + ',参数value不能是对象类型'
+      } else {
+        e = { name: 'appendParam', message: '参数value不能是对象类型' }
+      }
+    }
+    if (!this.typeCheck.isString(url)) {
+      if (e.message) {
+        e.message = e.message + ',参数url非字符类型'
+      } else {
+        e = { name: 'appendParam', message: '参数url非字符类型' }
+      }
+    }
+    if (Object.keys(e).length) {
+      this.printErrorLog(e)
+      return url
+    }
     return this.appendParams({ [key]: value }, url)
   }
 
-  appendParams(params, url) { // 向url中添加多个字段
+  appendParams(params, url = window.location.href) { // 向url中添加多个字段
     try {
-      !this.typeCheck.isObject(params) && this.printErrorLog({ name: 'appendParams', message: '参数params非json对象' })
+      let e = {}
+      if (!this.typeCheck.isObject(params)) {
+        e = { name: 'appendParams', message: '参数params非json对象' }
+      }
+      if (!this.typeCheck.isString(url)) {
+        if (e.message) {
+          e.message = e.message + ',参数url非字符类型'
+        } else {
+          e = { name: 'appendParams', message: '参数url非字符类型' }
+        }
+      }
+      if (Object.keys(e).length) {
+        this.printErrorLog(e)
+        return url
+      }
       let a = document.createElement('a')
-      a.href = url || window.location.href
+      a.href = url
       let temp = this.parseURL(url)
       let originPath = temp.originPath
       let search = '?'
@@ -114,27 +170,40 @@ class TDUrl {
       return originPath + search + temp.hash
     } catch (e) {
       this.printErrorLog(e)
-      return ''
+      return url
     }
   }
 
-  removeParams(arr, url) { // 从url中去除多个字段
+  removeParams(arr, url = window.location.href) { // 从url中去除多个字段
     try {
-      !this.typeCheck.isArray(arr) && this.printErrorLog({ name: 'removeParams', message: '参数arr非数组' })
-      if (this.typeCheck.isArray(arr)) {
+      let e = {}
+      if (!this.typeCheck.isArray(arr)) {
+        e = { name: 'removeParams', message: '参数arr非数组' }
+        return url
+      } else {
         if (arr.findIndex(item => !this.typeCheck.isString(item)) !== -1) {
-          this.printErrorLog({ name: 'removeParams', message: '参数arr数组元素有非字符元素' })
-          return url
+          e.message = { name: 'removeParams', message: '参数arr数组元素有非字符类型' }
         }
       }
-      let temp = this.parseURL(url)
+      if (!this.typeCheck.isString(url)) {
+        if (e.message) {
+          e.message = e.message + ',参数url非字符类型'
+        } else {
+          e = { name: 'removeParams', message: '参数url非字符类型' }
+        }
+      }
+      if (Object.keys(e).length) {
+        this.printErrorLog(e)
+        return url
+      }
+      const temp = this.parseURL(url)
       arr.forEach((item) => {
         delete temp.params[item]
       })
       return this.appendParams(temp.params, temp.originPath)
     } catch (e) {
       this.printErrorLog(e)
-      return ''
+      return url
     }
   }
 
